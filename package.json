@@ -1,11 +1,31 @@
 {
-  "name": "supabasedemoapp",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "document-manager",
+  "private": true,
+  "version": "0.1.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && vite",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "bootstrap": "^5.3.3",
+    "crypto-browserify": "^3.12.1",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.2",
+    "react-dom": "^18.2.0",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vite": "^5.2.0"
+  }
 }
