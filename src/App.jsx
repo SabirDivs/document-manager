@@ -10,7 +10,7 @@ import './App.css';
 function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentDoc, setCurrentDoc] = useState(null);
+  const [currentDocument, setCurrentDocument] = useState(null);
   const [activeTab, setActiveTab] = useState('documents');
 
   useEffect(() => {
@@ -31,19 +31,14 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSelectDocument = (doc) => {
-    setCurrentDoc(doc);
-    setActiveTab('editor');
-  };
-
   const handleNewDocument = () => {
-    setCurrentDoc(null);
+    setCurrentDocument(null);
     setActiveTab('editor');
   };
 
-  const handleDocumentSaved = () => {
-    setCurrentDoc(null);
-    setActiveTab('documents');
+  const handleDocumentSelect = (doc) => {
+    setCurrentDocument(doc);
+    setActiveTab('editor');
   };
 
   if (loading) {
@@ -60,70 +55,59 @@ function App() {
 
   return (
     <div className="d-flex flex-column vh-100">
-      {/* Navigation Bar */}
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container fluid>
-          <Navbar.Brand className="d-flex align-items-center">
-            <i className="bi bi-files me-2"></i>
-            <span>Document Manager Pro</span>
-          </Navbar.Brand>
-          
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          
-          <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-            <Nav>
-              <Nav.Link 
-                active={activeTab === 'documents'} 
-                onClick={() => setActiveTab('documents')}
-                className="d-flex align-items-center"
+      <Navbar bg="dark" variant="dark" expand="lg" className="px-3">
+        <Navbar.Brand className="d-flex align-items-center">
+          <i className="bi bi-files me-2"></i>
+          <span>Document Manager</span>
+        </Navbar.Brand>
+        
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        
+        <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+          <Nav>
+            <Nav.Link 
+              active={activeTab === 'documents'} 
+              onClick={() => setActiveTab('documents')}
+            >
+              <i className="bi bi-folder me-1"></i> Documents
+            </Nav.Link>
+            <Nav.Link 
+              active={activeTab === 'editor'} 
+              onClick={() => setActiveTab('editor')}
+            >
+              <i className="bi bi-pencil me-1"></i> Editor
+            </Nav.Link>
+            <Nav.Link 
+              active={activeTab === 'upload'} 
+              onClick={() => setActiveTab('upload')}
+            >
+              <i className="bi bi-upload me-1"></i> Files
+            </Nav.Link>
+            
+            <div className="d-flex align-items-center ms-3">
+              <span className="text-light me-2">
+                <i className="bi bi-person-circle me-1"></i>
+                {session.user.email}
+              </span>
+              <Button 
+                variant="outline-light" 
+                size="sm"
+                onClick={() => supabase.auth.signOut()}
               >
-                <i className="bi bi-folder me-1"></i> Documents
-              </Nav.Link>
-              <Nav.Link 
-                active={activeTab === 'editor'} 
-                onClick={() => {
-                  setCurrentDoc(null);
-                  setActiveTab('editor');
-                }}
-                className="d-flex align-items-center"
-              >
-                <i className="bi bi-pencil me-1"></i> Editor
-              </Nav.Link>
-              <Nav.Link 
-                active={activeTab === 'upload'} 
-                onClick={() => setActiveTab('upload')}
-                className="d-flex align-items-center"
-              >
-                <i className="bi bi-upload me-1"></i> Upload
-              </Nav.Link>
-              
-              <div className="d-flex align-items-center ms-3">
-                <span className="text-light me-2">
-                  <i className="bi bi-person-circle me-1"></i>
-                  {session.user.email}
-                </span>
-                <Button 
-                  variant="outline-light" 
-                  size="sm"
-                  onClick={() => supabase.auth.signOut()}
-                >
-                  Logout
-                </Button>
-              </div>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
+                Logout
+              </Button>
+            </div>
+          </Nav>
+        </Navbar.Collapse>
       </Navbar>
 
-      {/* Main Content */}
       <Container fluid className="flex-grow-1 d-flex p-0">
         <Row className="flex-grow-1 g-0">
-          {/* Sidebar */}
-          <Col md={3} className="sidebar p-3">
+          <Col md={3} className="sidebar p-3 border-end">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5>
                 {activeTab === 'documents' && 'My Documents'}
-                {activeTab === 'upload' && 'File Upload'}
+                {activeTab === 'upload' && 'File Manager'}
                 {activeTab === 'editor' && 'Document Editor'}
               </h5>
               
@@ -142,15 +126,18 @@ function App() {
               {activeTab === 'documents' && (
                 <DocumentList 
                   userId={session.user.id} 
-                  onSelectDocument={handleSelectDocument}
+                  onSelectDocument={handleDocumentSelect}
                 />
               )}
               
               {activeTab === 'upload' && (
-                <FileUploader userId={session.user.id} />
+                <div className="alert alert-info">
+                  <i className="bi bi-info-circle me-2"></i>
+                  Use the main panel to manage files
+                </div>
               )}
               
-              {activeTab === 'editor' && !currentDoc && (
+              {activeTab === 'editor' && !currentDocument && (
                 <div className="alert alert-info mb-0">
                   <i className="bi bi-info-circle me-2"></i>
                   Create a new document or select one from your documents list
@@ -159,55 +146,39 @@ function App() {
             </div>
           </Col>
           
-          {/* Main Content Area */}
           <Col md={9} className="main-content p-4">
             {activeTab === 'editor' ? (
-              <div className="h-100 d-flex flex-column">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h4>
-                    {currentDoc ? `Editing: ${currentDoc.title || 'Untitled Document'}` : 'Create New Document'}
-                  </h4>
-                  <Button 
-                    variant="outline-secondary" 
-                    size="sm"
-                    onClick={() => setActiveTab('documents')}
-                  >
-                    <i className="bi bi-arrow-left me-1"></i> Back to List
-                  </Button>
-                </div>
-                
-                <div className="flex-grow-1">
-                  <DocumentEditor 
-                    userId={session.user.id} 
-                    document={currentDoc}
-                    onSave={handleDocumentSaved}
-                  />
-                </div>
-              </div>
-            ) : (
+              <DocumentEditor 
+                userId={session.user.id} 
+                document={currentDocument}
+                onSave={() => {
+                  setCurrentDocument(null);
+                  setActiveTab('documents');
+                }}
+              />
+            ) : activeTab === 'upload' ? (
+              <FileUploader userId={session.user.id} />
+            ) : activeTab === 'documents' ? (
               <div className="d-flex flex-column justify-content-center align-items-center h-100">
                 <div className="text-center mb-4">
                   <i className="bi bi-files" style={{ fontSize: '5rem', color: '#e9ecef' }}></i>
                 </div>
-                <h3 className="text-muted">Document Manager Pro</h3>
+                <h3 className="text-muted">Document Manager</h3>
                 <p className="text-center text-muted">
-                  {activeTab === 'documents' 
-                    ? 'Select a document to edit or create a new one' 
-                    : 'Upload files to your document storage'}
+                  Select a document to edit or create a new one
                 </p>
               </div>
-            )}
+            ) : null}
           </Col>
         </Row>
       </Container>
 
-      {/* Footer */}
-      <footer className="footer py-3">
+      <footer className="footer py-3 bg-light border-top">
         <Container>
           <Row>
             <Col className="text-center text-muted">
               <small>
-                Document Manager Pro &copy; {new Date().getFullYear()} | 
+                Document Manager &copy; {new Date().getFullYear()} | 
                 Powered by Supabase | 
                 User: {session.user.email}
               </small>

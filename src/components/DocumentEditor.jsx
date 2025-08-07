@@ -1,31 +1,32 @@
-import { useState, useEffect } from 'react'
-import { Form, Button, Spinner, Card, Alert } from 'react-bootstrap'
-import { supabase } from '../lib/supabaseClient'
+import { useState, useEffect } from 'react';
+import { Form, Button, Spinner, Card, Alert } from 'react-bootstrap';
+import { supabase } from '../lib/supabaseClient';
 
 export default function DocumentEditor({ userId, document, onSave }) {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [isPublic, setIsPublic] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [saved, setSaved] = useState(false)
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
 
+  // Initialize form with document data if editing
   useEffect(() => {
     if (document) {
-      setTitle(document.title || '')
-      setContent(document.content || '')
-      setIsPublic(document.is_public || false)
+      setTitle(document.title || '');
+      setContent(document.content || '');
+      setIsPublic(document.is_public || false);
     } else {
-      setTitle('')
-      setContent('')
-      setIsPublic(false)
+      setTitle('');
+      setContent('');
+      setIsPublic(false);
     }
-  }, [document])
+  }, [document]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
     
     try {
       const docData = {
@@ -33,44 +34,48 @@ export default function DocumentEditor({ userId, document, onSave }) {
         content,
         user_id: userId,
         is_public: isPublic
-      }
+      };
       
       if (document) {
         // Update existing document
         const { error } = await supabase
           .from('documents')
           .update(docData)
-          .eq('id', document.id)
+          .eq('id', document.id);
         
-        if (error) throw error
+        if (error) throw error;
       } else {
         // Create new document
         const { error } = await supabase
           .from('documents')
-          .insert(docData)
+          .insert(docData);
         
-        if (error) throw error
+        if (error) throw error;
       }
       
-      setSaved(true)
+      setSaved(true);
       setTimeout(() => {
-        setSaved(false)
-        if (onSave) onSave()
-      }, 1500)
+        setSaved(false);
+        if (onSave) onSave();
+      }, 1500);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <Card className="h-100">
-      <Card.Body className="d-flex flex-column h-100">
-        {error && <Alert variant="danger">{error}</Alert>}
-        {saved && <Alert variant="success" className="mb-3">Document saved successfully!</Alert>}
+    <Card>
+      <Card.Body>
+        <Card.Title className="mb-4">
+          {document ? 'Edit Document' : 'Create New Document'}
+        </Card.Title>
         
-        <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
+        {error && <Alert variant="danger">{error}</Alert>}
+        {saved && <Alert variant="success">Document saved successfully!</Alert>}
+        
+        <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Title</Form.Label>
             <Form.Control
@@ -82,11 +87,11 @@ export default function DocumentEditor({ userId, document, onSave }) {
             />
           </Form.Group>
           
-          <Form.Group className="mb-3 flex-grow-1 d-flex flex-column">
+          <Form.Group className="mb-3">
             <Form.Label>Content</Form.Label>
             <Form.Control
               as="textarea"
-              className="flex-grow-1"
+              rows={10}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Document content"
@@ -103,26 +108,32 @@ export default function DocumentEditor({ userId, document, onSave }) {
             />
           </Form.Group>
           
-          <div className="d-flex justify-content-end mt-auto">
+          <div className="d-flex justify-content-between">
+            <Button 
+              variant="secondary" 
+              onClick={() => {
+                if (document) {
+                  setCurrentDocument(null);
+                }
+                if (onSave) onSave();
+              }}
+            >
+              Cancel
+            </Button>
+            
             <Button 
               variant="primary" 
               type="submit"
               disabled={loading}
             >
               {loading ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  {document ? 'Saving...' : 'Creating...'}
-                </>
-              ) : document ? (
-                'Save Changes'
-              ) : (
-                'Create Document'
-              )}
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : null}
+              {document ? 'Save Changes' : 'Create Document'}
             </Button>
           </div>
         </Form>
       </Card.Body>
     </Card>
-  )
+  );
 }

@@ -8,12 +8,13 @@ export default defineConfig({
     port: 5173,
     open: true
   },
-  root: './public',  // Add this line
+  // REMOVE THIS: root: './public',
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'public/index.html')
+      input: path.resolve(__dirname, 'index.html') // Point to root index.html
     }
-  }
+  },
+  publicDir: 'public' // Specify public assets directory
 })

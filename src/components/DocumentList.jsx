@@ -1,35 +1,35 @@
-import { useState, useEffect } from 'react'
-import { ListGroup, Badge, Spinner, Button } from 'react-bootstrap'
-import { supabase } from '../lib/supabaseClient'
+import { useState, useEffect } from 'react';
+import { ListGroup, Badge, Spinner, Button } from 'react-bootstrap';
+import { supabase } from '../lib/supabaseClient';
 
 export default function DocumentList({ userId, onSelectDocument }) {
-  const [documents, setDocuments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [selectedId, setSelectedId] = useState(null)
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
-    fetchDocuments()
-    setupRealtime()
-  }, [userId])
+    fetchDocuments();
+    setupRealtime();
+  }, [userId]);
 
   const fetchDocuments = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const { data, error } = await supabase
         .from('documents')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
       
-      if (error) throw error
-      setDocuments(data || [])
+      if (error) throw error;
+      setDocuments(data || []);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const setupRealtime = () => {
     const subscription = supabase
@@ -38,30 +38,31 @@ export default function DocumentList({ userId, onSelectDocument }) {
         { event: '*', schema: 'public', table: 'documents' },
         () => fetchDocuments()
       )
-      .subscribe()
+      .subscribe();
     
-    return () => supabase.removeChannel(subscription)
-  }
+    return () => supabase.removeChannel(subscription);
+  };
 
   const deleteDocument = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this document?')) return
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
     
     try {
       const { error } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id)
+        .eq('id', id);
       
-      if (error) throw error
+      if (error) throw error;
+      setSelectedId(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleSelect = (doc) => {
-    setSelectedId(doc.id)
-    if (onSelectDocument) onSelectDocument(doc)
-  }
+    setSelectedId(doc.id);
+    if (onSelectDocument) onSelectDocument(doc);
+  };
 
   if (loading) {
     return (
@@ -69,7 +70,7 @@ export default function DocumentList({ userId, onSelectDocument }) {
         <Spinner animation="border" size="sm" className="me-2" />
         Loading documents...
       </div>
-    )
+    );
   }
 
   return (
@@ -87,38 +88,38 @@ export default function DocumentList({ userId, onSelectDocument }) {
           {documents.map(doc => (
             <ListGroup.Item 
               key={doc.id} 
-              className={`document-item ${selectedId === doc.id ? 'active' : ''}`}
+              action
+              active={selectedId === doc.id}
               onClick={() => handleSelect(doc)}
+              className="d-flex justify-content-between align-items-center"
             >
-              <div className="d-flex justify-content-between align-items-center">
-                <div className="me-2">
-                  <div className="fw-medium">{doc.title || 'Untitled Document'}</div>
-                  <small className="text-muted">
-                    {new Date(doc.created_at).toLocaleDateString()}
-                  </small>
-                </div>
-                
-                <div>
+              <div className="me-2">
+                <div className="fw-medium">{doc.title || 'Untitled Document'}</div>
+                <small className="text-muted">
+                  {new Date(doc.created_at).toLocaleDateString()}
                   {doc.is_public && (
-                    <Badge bg="success" className="me-1">Public</Badge>
+                    <span className="ms-2">
+                      <Badge bg="success" className="ms-2">Public</Badge>
+                    </span>
                   )}
-                  <Button 
-                    variant="link" 
-                    className="text-danger p-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteDocument(doc.id);
-                    }}
-                    title="Delete document"
-                  >
-                    <i className="bi bi-trash"></i>
-                  </Button>
-                </div>
+                </small>
               </div>
+              
+              <Button 
+                variant="link" 
+                className="text-danger p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteDocument(doc.id);
+                }}
+                title="Delete document"
+              >
+                <i className="bi bi-trash"></i>
+              </Button>
             </ListGroup.Item>
           ))}
         </ListGroup>
       )}
     </div>
-  )
+  );
 }

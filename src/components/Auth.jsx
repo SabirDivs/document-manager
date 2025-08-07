@@ -36,7 +36,7 @@ export default function Auth() {
         <Card.Body>
           <div className="text-center mb-4">
             <i className="bi bi-files" style={{ fontSize: '3rem', color: '#0d6efd' }}></i>
-            <h3 className="mt-2">Document Manager Pro</h3>
+            <h3 className="mt-2">Document Manager</h3>
           </div>
           
           <Card.Title className="text-center mb-4">

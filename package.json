@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && vite",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && vite",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx"
